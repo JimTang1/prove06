@@ -1,0 +1,31 @@
+After completing the assignment, be sure to push to Github and Heroku.
+Please answer the questions in this text file and submit it to I-Learn.
+
+1. Copy and paste the URL for your web application (e.g., Heroku):
+https://cse341prove05.herokuapp.com/
+
+2. Copy and paste the URL for your source code repository (e.g., GitHub):
+https://github.com/JimTang1/prove05
+
+3. Briefly list and describe the elements of the application that are functioning. 
+LogIn and SignUp page.
+Save : full name, email, password into database.
+
+4. Briefly describe any pieces of the assignment that are not yet working correctly.
+None!
+
+5. Briefly describe the "coolest" thing you learned while completing this assignment.
+I think I am impressed by how people develop different tools to make the development easier and faster. We learn from very complicated to simple.
+
+6. If you could change this assignment to be more effective or helpful, what would you change?
+Understand how data passing in the code. To ejs, database, other controller.  I think if we have more knowledge about that will be really helpful.
+
+7. Please select the category you feel best describes your assignment:
+   5 - Shows creativity and excels above and beyond requirements
+
+8. Provide a brief justification (1-2 sentences) for selecting that category.
+Everything is working.
+Good User design and experience.
+display error when the user signs in with the same email and log in with wrong data.
+Save username in the database.
+
