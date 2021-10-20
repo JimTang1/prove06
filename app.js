@@ -1,46 +1,47 @@
 const PORT = process.env.PORT || 3000; // So we can run on heroku || (OR) localhost:5000
 
-const path = require('path');
+const path = require("path");
 
-const cors = require('cors');
+const cors = require("cors");
 
-const express = require('express');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const session = require('express-session');
-const MongoDBStore = require('connect-mongodb-session')(session);
-const csrf = require('csurf');
-const flash = require('connect-flash');
+const express = require("express");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const session = require("express-session");
+const MongoDBStore = require("connect-mongodb-session")(session);
+const csrf = require("csurf");
+const flash = require("connect-flash");
 
-const errorController = require('./controllers/error');
-const User = require('./models/user');
+const errorController = require("./controllers/error");
+const User = require("./models/user");
 
-const MONGODB_URL = process.env.MONGODB_URL || "mongodb+srv://JimTang:love0621@cluster0.hy1kl.mongodb.net/shop?retryWrites=true&w=majority";
-
+const MONGODB_URL =
+  process.env.MONGODB_URL ||
+  "mongodb+srv://JimTang:love0621@cluster0.hy1kl.mongodb.net/shop?retryWrites=true&w=majority";
 
 const app = express();
 const store = new MongoDBStore({
   uri: MONGODB_URL,
-  collection: 'sessions',
+  collection: "sessions",
 });
 
 const csrfProtection = csrf();
 
-app.set('view engine', 'ejs');
-app.set('views', 'views');
+app.set("view engine", "ejs");
+app.set("views", "views");
 
-const adminRoutes = require('./routes/admin');
-const shopRoutes = require('./routes/shop');
-const authRoutes = require('./routes/auth');
+const adminRoutes = require("./routes/admin");
+const shopRoutes = require("./routes/shop");
+const authRoutes = require("./routes/auth");
 
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({
-    secret: 'my secret',
+    secret: "my secret",
     resave: false,
     saveUninitialized: false,
-    store: store
+    store: store,
   })
 );
 
@@ -48,48 +49,62 @@ app.use(csrfProtection);
 app.use(flash());
 
 app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
+app.use((req, res, next) => {
   if (!req.session.user) {
     return next();
   }
   User.findById(req.session.user._id)
-    .then(user => {
+    .then((user) => {
+      if (!user) {
+        return next();
+      }
       req.user = user;
       next();
     })
-    .catch(err => console.log(err));
+    .catch((err) => {
+      next(new Error(err));
+    });
 });
 
-app.use((req, res, next) =>{
-  res.locals.isAuthenticated = req.session.isLoggedIn;
-  res.locals.csrfToken = req.csrfToken()
-  next();
-})
-
-app.use('/admin', adminRoutes);
+app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
+app.get("/500", errorController.get500);
+
 app.use(errorController.get404);
 
+app.use((error, req, res, next) => {
+  // res.redirect("/500");
+  res.status(500).render("500", {
+    pageTitle: "Error!",
+    path: "/500",
+    isAuthenticated: req.session.isLoggedIn,
+  });
+});
 
 const corsOptions = {
   origin: "https://cse341-prove04.herokuapp.com/",
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
 
 const options = {
   useUnifiedTopology: true,
   useNewUrlParser: true,
-  family: 4
+  family: 4,
 };
-
 
 mongoose
   .connect(MONGODB_URL, options)
-  .then(result => {
+  .then((result) => {
     app.listen(PORT, () => console.log(`Listening on ${PORT}`));
   })
-  .catch(err => {
-    console.log(err)
+  .catch((err) => {
+    console.log(err);
   });
